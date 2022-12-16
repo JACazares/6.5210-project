@@ -31,22 +31,22 @@ int main()
 		//vector<P> hull_jarvis_march = jarvis_march(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
-		vector<P> hull_monotone_chain = monotone_chain(points_aux);
+		//vector<P> hull_monotone_chain = monotone_chain(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
-		vector<P> hull_graham_scan = graham_scan(points_aux);
+		//vector<P> hull_graham_scan = graham_scan(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
-		//vector<P> hull_divide_and_conquer = divide_and_conquer(points_aux);
+		vector<P> hull_divide_and_conquer = divide_and_conquer(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
 		//vector<P> hull_kirkpatrick_seidel = kirkpatrick_seidel(points_aux);
 		points_aux.clear();
 
 		//cout << hull_jarvis_march.size() << "\n";
-		cout << hull_monotone_chain.size() << "\n";
-		cout << hull_graham_scan.size() << "\n";
-		//cout << hull_divide_and_conquer.size() << "\n";
+		//cout << hull_monotone_chain.size() << "\n";
+		//cout << hull_graham_scan.size() << "\n";
+		cout << hull_divide_and_conquer.size() << "\n";
 		//cout << hull_kirkpatrick_seidel.size() << "\n";
 		
 		cin >> N;
