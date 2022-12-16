@@ -71,7 +71,7 @@ int main()
     uniform_real_distribution<> distrib(-10000, 10000);
     uniform_int_distribution<> unif_N(5000, 10000);
 	
-	int T = 10;
+	int T = 2;
 	while(T--)
 	{
 		int N = unif_N(rd);
