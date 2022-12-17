@@ -8,6 +8,7 @@ using namespace std;
 #include "../Algorithms/Kactl/Convex.h"
 #include "../Algorithms/Kirkpatrick-Seidel/kirkpatrick-seidel.h"
 #include "../Algorithms/Algorithms_A/Convex_Hull_A.h"
+#include "../Algorithms/Chan/chan.h"
 
 using P = Point<double>;
 
@@ -37,17 +38,21 @@ int main()
 		//vector<P> hull_graham_scan = graham_scan(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
-		vector<P> hull_divide_and_conquer = divide_and_conquer(points_aux);
+		// vector<P> hull_divide_and_conquer = divide_and_conquer(points_aux);
 		points_aux.clear();
 		copy(points.begin(), points.end(), back_inserter(points_aux));
 		//vector<P> hull_kirkpatrick_seidel = kirkpatrick_seidel(points_aux);
+		points_aux.clear();
+		copy(points.begin(), points.end(), back_inserter(points_aux));
+		vector<P> hull_chan = chan(points_aux);
 		points_aux.clear();
 
 		//cout << hull_jarvis_march.size() << "\n";
 		//cout << hull_monotone_chain.size() << "\n";
 		//cout << hull_graham_scan.size() << "\n";
-		cout << hull_divide_and_conquer.size() << "\n";
+		//cout << hull_divide_and_conquer.size() << "\n";
 		//cout << hull_kirkpatrick_seidel.size() << "\n";
+		cout << hull_chan.size() << "\n";
 		
 		cin >> N;
 	}
