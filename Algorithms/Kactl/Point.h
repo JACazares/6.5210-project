@@ -18,6 +18,7 @@ struct Point {
 	explicit Point(T x=0, T y=0) : x(x), y(y) {}
 	bool operator<(P p) const { return tie(x,y) < tie(p.x,p.y); }
 	bool operator==(P p) const { return tie(x,y)==tie(p.x,p.y); }
+	bool operator<=(P p) const { return tie(x,y) <= tie(p.x,p.y); }
 	P operator+(P p) const { return P(x+p.x, y+p.y); }
 	P operator-(P p) const { return P(x-p.x, y-p.y); }
 	P operator*(T d) const { return P(x*d, y*d); }
