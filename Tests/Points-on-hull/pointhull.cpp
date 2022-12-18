@@ -1,48 +1,12 @@
 #include <bits/stdc++.h>
-#define all(x) x.begin(), x.end()
-#define sz(x) (int)x.size()
-
+#include "../../Algorithms/Kactl/Point.h"
 using namespace std;
-
-#include "../Algorithms/Kactl/Point.h"
-#include "../Algorithms/Kactl/Convex.h"
-#include "../Algorithms/Kirkpatrick-Seidel/kirkpatrick-seidel.h"
-#include "../Algorithms/Algorithms_A/Convex_Hull_A.h"
-#include "../Algorithms/Chan/chan.h"
-
-using P = Point<double>;
 const double pi = acos(-1);
-
-template <class DT = std::chrono::milliseconds,
-          class ClockT = std::chrono::steady_clock>
-class Timer
-{
-    using timep_t = decltype(ClockT::now());
-    
-    timep_t _start = ClockT::now();
-    timep_t _end = {};
-
-public:
-    void tick() { 
-        _end = timep_t{};
-        _start = ClockT::now(); 
-    }
-    
-    void tock() {
-        _end = ClockT::now(); 
-    }
-    
-    template <class duration_t = DT>
-    auto duration() const { 
-        // Use gsl_Expects if your project supports it.
-        assert(_end != timep_t{} && "Timer must toc before reading the time"); 
-        return std::chrono::duration_cast<duration_t>(_end - _start); 
-    }
-};
+typedef Point <double> P;
 
 /// Hull points are taken from the eclipse x^2/a^2 + y^2/b^2 = 1
 /// Can also be used for circles with a = b = 1
-vector <Point <double>> elipse(int n, int h, int seed, double a, double b) {
+vector <Point <double>> eclipse(int n, int h, int seed, double a, double b) {
     mt19937 generator (seed);
     uniform_real_distribution <> unif (-1, 1);
     set <Point <double>> points;
@@ -141,66 +105,15 @@ vector <Point <double>> randSquare(int n, int seed, double width) {
 }
 
 vector <Point <double>> randCircle(int n, int seed, double radius) {
-    return elipse(n, 0, seed, radius, radius);
+    return eclipse(n, 0, seed, radius, radius);
 }
 
 vector <Point <double>> sortArray(int n, int seed) {
     return parabola(n, n, seed, 0.25);
 }
 
-double chan_time(vector <Point <double>> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    chan(points);
-    clock.tock();
-    return clock.duration().count();
-}
-double grahan_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    graham_scan(points);
-    clock.tock();
-    return clock.duration().count();
-}
-double monotone_chain_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    monotone_chain(points);
-    clock.tock();
-    return clock.duration().count();
-}
-
-double jarvis_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    jarvis_march(points);
-    clock.tock();
-    return clock.duration().count();
-}
-
-double divide_and_conquer_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    divide_and_conquer(points);
-    clock.tock();
-    return clock.duration().count();
-}
-
-double kirkpatrick_seidel_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    kirkpatrick_seidel(points);
-    clock.tock();
-    return clock.duration().count();
-}
-
 int main() {
-    vector <P> points = elipse(100000, 1000, 12, 1, 1);
-    cout << chan_time(points) << endl;
-    cout << monotone_chain_time(points) << endl;
-    cout << grahan_time(points) << endl;
-    cout << jarvis_time(points) << endl;
-    cout << divide_and_conquer_time(points) << endl;
-    cout << kirkpatrick_seidel_time(points) << endl;
+    cout.precision(10);
+    auto dataset = randCircle(1e6, 14, 5);
+    cout << dataset[1221] << endl;
 }
-
