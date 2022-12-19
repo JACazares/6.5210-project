@@ -83,6 +83,10 @@ vector <Point <double>> elipse_border(int n, int h, int seed, double a, double b
     return dataset;
 }
 
+vector <Point <double>> uniCircle(int n, int seed, double radius) {
+    return elipse(n, n, seed, radius, radius);
+}
+
 /// points enclosed by line mx + c and mx - c
 vector <Point <double>> line(int n, int seed, double m, double c) {
     mt19937 generator (seed);
@@ -227,12 +231,12 @@ void vary_h() {
 void benchmark() {
     int n = 1<<19;
     int h = 0.50 * n;
-    auto points = randCircle(n, 97, 1e8);
+    auto points = elipse_border(n, 0, 29, 11, 30);
     int iter = 5;
     int tmp = iter;
     double sum = 0;
     while(tmp--) {
-        double t = kirkpatrick_seidel_time(points);
+        double t = graham_time(points);
         sum += t;
         cout << t << endl;
         if(t >= 60000) {
