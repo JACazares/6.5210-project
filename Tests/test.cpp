@@ -13,33 +13,6 @@ using namespace std;
 using P = Point<double>;
 const double pi = acos(-1);
 
-template <class DT = std::chrono::milliseconds,
-          class ClockT = std::chrono::steady_clock>
-class Timer
-{
-    using timep_t = decltype(ClockT::now());
-    
-    timep_t _start = ClockT::now();
-    timep_t _end = {};
-
-public:
-    void tick() { 
-        _end = timep_t{};
-        _start = ClockT::now(); 
-    }
-    
-    void tock() {
-        _end = ClockT::now(); 
-    }
-    
-    template <class duration_t = DT>
-    auto duration() const { 
-        // Use gsl_Expects if your project supports it.
-        assert(_end != timep_t{} && "Timer must toc before reading the time"); 
-        return std::chrono::duration_cast<duration_t>(_end - _start); 
-    }
-};
-
 /// Hull points are taken from the eclipse x^2/a^2 + y^2/b^2 = 1
 /// Can also be used for circles with a = b = 1
 vector <Point <double>> elipse(int n, int h, int seed, double a, double b) {
@@ -67,7 +40,7 @@ vector <Point <double>> elipse(int n, int h, int seed, double a, double b) {
 // Most points will be on the curve y = 4ax^2
 // Other points will be on the curve y = 4ax^2 + 100 which is strictly above 4ax^2
 // So most points will be very close to the curve
-vector <Point <double>> parabola(int n, int h, int seed, int a) {     
+vector <Point <double>> parabola(int n, int h, int seed, double a) {     
     mt19937 generator (seed);
     uniform_real_distribution <> unif (-1, 1);
     set <Point <double>> points;
@@ -87,7 +60,7 @@ vector <Point <double>> parabola(int n, int h, int seed, int a) {
     return dataset;
 }
 
-vector <Point <double>> elipse_border(int n, int h, int seed, int a, int b) {
+vector <Point <double>> elipse_border(int n, int h, int seed, double a, double b) {
     mt19937 generator (seed);
     uniform_real_distribution <> unif (-1, 1);
     set <Point <double>> points;
@@ -148,59 +121,130 @@ vector <Point <double>> sortArray(int n, int seed) {
     return parabola(n, n, seed, 0.25);
 }
 
-double chan_time(vector <Point <double>> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
-    chan(points);
-    clock.tock();
-    return clock.duration().count();
+vector <Point <double>> cluster(int n, int k, int seed) {
+    int sz = n / k;
+    mt19937 generator (seed);
+    uniform_real_distribution <> unif (-1, 1);
+    set <Point <double>> points;
+    const double maxCoord = 1e5;
+    while(points.size() < n) {
+        auto block = randSquare(n / k, seed, 1e2);
+        double dx = unif(generator) * maxCoord;
+        double dy = unif(generator) * maxCoord;
+        for(auto [x, y] : block) points.insert(P(x + dx, y + dy));
+    }
+    vector <Point <double>> dataset (points.begin(), points.end());
+    random_shuffle(dataset.begin(), dataset.end());
+    return dataset;
 }
-double grahan_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
+
+double chan_time(vector <Point <double>> points) {
+    clock_t start = clock();
+    chan(points);
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
+}
+double graham_time(vector <P> points) {
+    clock_t start = clock();
     graham_scan(points);
-    clock.tock();
-    return clock.duration().count();
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
 }
 double monotone_chain_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
+    clock_t start = clock();
     monotone_chain(points);
-    clock.tock();
-    return clock.duration().count();
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
 }
 
 double jarvis_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
+    clock_t start = clock();
     jarvis_march(points);
-    clock.tock();
-    return clock.duration().count();
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
 }
 
 double divide_and_conquer_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
+    clock_t start = clock();
     divide_and_conquer(points);
-    clock.tock();
-    return clock.duration().count();
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
 }
 
 double kirkpatrick_seidel_time(vector <P> points) {
-    Timer clock; // Timer<milliseconds, steady_clock>
-    clock.tick();
+    clock_t start = clock();
     kirkpatrick_seidel(points);
-    clock.tock();
-    return clock.duration().count();
+    clock_t end = clock();
+    return 1000.0 * (end - start) / CLOCKS_PER_SEC;
+}
+
+const string algos[] = {"GS", "MCA", "JM", "DNQ", "KSA", "CA"};
+map <string, double> get_times(vector <P> points) {
+    map <string, double> time;
+    time["GS"] = graham_time(points);
+    time["MCA"] = monotone_chain_time(points);
+    // time["JM"] = jarvis_time(points);
+    time["DNQ"] = divide_and_conquer_time(points);
+    // time["KSA"] = kirkpatrick_seidel_time(points);
+    time["CA"] = chan_time(points);
+    return time;
+}
+
+// keeps n = 2^19. 
+// changes h from 2^4 to 
+void vary_h() {
+    int n = 1 << 19;
+    int a = 21;
+    int b = 13;
+    int seed = 10;
+    for(int h = 1 << 10; h <= n; h <<= 1) {
+        auto points = elipse(n, h, seed++, a, b);
+        auto actual_h = kactl_convex_hull(points); 
+        cout << actual_h.size() * 100.0 / n  << endl;
+    }
+    cout << endl;
+    
+    seed = 10;
+    for(int h = 1 << 10; h <= n; h <<= 1) {
+        auto points = elipse(n, h, seed++, a, b);
+        int iter = 5;
+        int tmp = iter;
+        double sum = 0;
+        while(tmp--) {
+            double t = graham_time(points);
+            sum += t;
+            if(t >= 60000) {
+                sum = LLONG_MAX;
+                break;
+            }
+        }
+        if(sum >= 60000) break;
+        cout << (sum / iter) << endl;
+    }
+    return ;
+}
+
+void benchmark() {
+    int n = 1<<19;
+    int h = 0.50 * n;
+    auto points = randCircle(n, 97, 1e8);
+    int iter = 5;
+    int tmp = iter;
+    double sum = 0;
+    while(tmp--) {
+        double t = kirkpatrick_seidel_time(points);
+        sum += t;
+        cout << t << endl;
+        if(t >= 60000) {
+            sum = LLONG_MAX;
+            break;
+        }
+    }
+    cout << (sum / iter) << endl;
 }
 
 int main() {
-    vector <P> points = elipse(100000, 1000, 12, 1, 1);
-    cout << chan_time(points) << endl;
-    cout << monotone_chain_time(points) << endl;
-    cout << grahan_time(points) << endl;
-    cout << jarvis_time(points) << endl;
-    cout << divide_and_conquer_time(points) << endl;
-    cout << kirkpatrick_seidel_time(points) << endl;
+    benchmark();
+    return 0;
 }
 

@@ -29,7 +29,7 @@ vector <Point <T>> get_lower_hull(vector <Point <T>> &points) {
   lower.reserve(n);
   for(int i = 2; i < n; i++) {
     auto pt = points[i];
-    while(lower.size() >= 2 && orientation(lower[lower.size() - 2], lower[lower.size() - 1], pt) == -1) {
+    while(lower.size() >= 2 && orientation(lower[lower.size() - 2], lower[lower.size() - 1], pt) != 1) {
       lower.pop_back();
     }
     lower.push_back(pt);
@@ -59,7 +59,7 @@ vector <Point <T>> chan_lower_hull(vector <Point <T>> &points, int m) {
       while(pt[i] < blocks[i].size() && blocks[i][pt[i]] <= current) {
         ++pt[i];
       }
-      while(pt[i] + 1 < blocks[i].size() && orientation(current, blocks[i][pt[i]], blocks[i][pt[i] + 1]) == -1) {
+      while(pt[i] + 1 < blocks[i].size() && orientation(current, blocks[i][pt[i]], blocks[i][pt[i] + 1]) != 1) {
         ++pt[i];
       }
     }
@@ -74,7 +74,7 @@ vector <Point <T>> chan_lower_hull(vector <Point <T>> &points, int m) {
           firstCand = false;
         } else if (ori == -1) {
           nextPoint = cand;
-        } else if (ori == 0 && (current - nextPoint).dist2() > (current - cand).dist2()) {
+        } else if (ori == 0 && (current - nextPoint).dist2() < (current - cand).dist2()) {
           nextPoint = cand;
         }
       }
